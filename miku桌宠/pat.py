@@ -14,7 +14,7 @@ def resource_path(relative_path):
         base_path = sys._MEIPASS
     else:
         # 开发环境，直接使用当前路径
-        base_path = os.path.abspath("py/miku桌宠") #改下路径
+        base_path = os.path.dirname(os.path.abspath(__file__))
     return os.path.join(base_path, relative_path)
 
 class PetWidget(QLabel):
