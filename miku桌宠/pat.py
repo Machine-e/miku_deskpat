@@ -4,24 +4,34 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt, QPoint, QTimer
 from PyQt6.QtGui import QMovie
+import os
 
+
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller"""
+    if hasattr(sys, '_MEIPASS'):
+        # 如果是打包后的环境
+        base_path = sys._MEIPASS
+    else:
+        # 开发环境，直接使用当前路径
+        base_path = os.path.abspath("py/miku桌宠") #改下路径
+    return os.path.join(base_path, relative_path)
 
 class PetWidget(QLabel):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.start_movie = QMovie("img2/1.gif")
-        self.normal_movie = QMovie("img2/normal2.gif")
-        self.shy_movie = QMovie("img2/feiwen.gif")
-        self.eating_movie = QMovie("img2/kaixin.gif")
-        self.sleeping_movie = QMovie("img2/shuijiao.gif")
-        self.dragging_movie = QMovie("img2/haipa.gif")
+        self.start_movie = QMovie(resource_path("img2/1.gif"))
+        self.normal_movie = QMovie(resource_path("img2/normal2.gif"))
+        self.shy_movie = QMovie(resource_path("img2/feiwen.gif"))
+        self.eating_movie = QMovie(resource_path("img2/kaixin.gif"))
+        self.sleeping_movie = QMovie(resource_path("img2/shuijiao.gif"))
+        self.dragging_movie = QMovie(resource_path("img2/haipa.gif"))
         
         self.size_width = 300
         self.size_height = 300
         self.setFixedSize(self.size_width,self.size_height)
-        self.move(1300,500)
-        
+
         #初始化
         self.start_movie.start()
         self.setMovie(self.start_movie)
@@ -53,20 +63,20 @@ class PetWidget(QLabel):
     def resizeEvent(self, event):
         super().resizeEvent(event)  # 调用父类的 resizeEvent 方法
         self.normal_movie.setScaledSize(self.size())
-        self.shy_movie.setScaledSize(self.size())
-        self.eating_movie.setScaledSize(self.size())
+        self.shy_movie.setScaledSize(0.95*self.size())
+        self.eating_movie.setScaledSize(0.95*self.size())
+        self.sleeping_movie.setScaledSize(0.85*self.size())
 
     def mousePressEvent(self, event):
         if event.button() == Qt.MouseButton.LeftButton:
             # 记录点击位置
             self.click_pos = event.globalPosition().toPoint()
-            pos = self.pos()
+            pos = self.parent().pos()
             # 记录点击开始时间
             self.click_start_time = event.timestamp()
             # 记录拖动开始位置
-            self.drag_start_position = event.globalPosition().toPoint() - self.pos()
+            self.drag_start_position = event.globalPosition().toPoint() - self.parent().pos()
             self.is_dragging = False
-            
             if pos.y()<self.click_pos.y()<pos.y()+self.size_height*0.5: #and pos.x()+self.size_width*0.4<self.click_pos.x()<pos.x()+self.size_width*0.6
                 self.is_move = True
             event.accept()
@@ -87,7 +97,8 @@ class PetWidget(QLabel):
                 current_time = event.timestamp()
                 if current_time - self.click_start_time > 200:
                         self.is_dragging = True
-                        self.move(event.globalPosition().toPoint() - self.drag_start_position)
+                        new_pos =event.globalPosition().toPoint() - self.drag_start_position
+                        self.parent().move(new_pos)
                         self.parent().update_button_positions()
                         self.switch_to_dragging()
             event.accept()
@@ -179,10 +190,10 @@ class PetApp(QWidget):
         super().__init__()
         self.initUI()
     def initUI(self):
-        self.setWindowTitle("桌面宠物")
-        self.setGeometry(0,0,2500,1600)
+        self.setWindowTitle("桌宠")
+        self.setGeometry(1300,500,300,330)
          #设置窗口标志
-        self.setWindowFlags(Qt.WindowType.Window | Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowSystemMenuHint )
+        self.setWindowFlags(Qt.WindowType.Window | Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowSystemMenuHint | Qt.WindowType.WindowStaysOnTopHint )
         # 设置背景透明
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         # 创建宠物
